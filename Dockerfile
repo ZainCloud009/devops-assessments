@@ -51,7 +51,7 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-availab
 COPY --from=builder /var/www/html /var/www/html
 
 # Permissions set karna
-RUN chown -R es2-user:ec2-user /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R es2-user:apache /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
