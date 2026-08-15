@@ -7,16 +7,16 @@ data "aws_instance" "jenkins_agent" {
   instance_id = var.jenkins_agent_instance_id
 }
 
-# Existing VPC ko Agent Instance ke zariye detect karna
-data "aws_vpc" "existing_vpc" {
-  id = data.aws_instance.jenkins_agent.vpc_id
+# Subnet Data Source se VPC ID extract karna
+data "aws_subnet" "agent_subnet" {
+  id = data.aws_instance.jenkins_agent.subnet_id
 }
 
 # 2. Managed Security Group for Laravel Application
 resource "aws_security_group" "laravel_app_sg" {
   name        = "laravel-app-sg"
   description = "Security group for Laravel App container hosted on existing Agent instance"
-  vpc_id      = data.aws_vpc.existing_vpc.id
+  vpc_id      = data.aws_subnet.agent_subnet.vpc_id
 
   # HTTP Web Access for Laravel Container
   ingress {
