@@ -1,15 +1,24 @@
 #!/bin/bash
 set -e
 
-cd /var/www/html/devops-assesments/app/
-# Cache configuration, routes, and views
+echo "Waiting for database connection..."
+
+# Database ready hone tak retry karein (max 30 seconds)
+max_tries=15
+count=0
+until php artisan db:monitor > /dev/null 2>&1 || [ $count -eq $max_tries ]; do
+    echo "Database to be reachable... ($count/$max_tries)"
+    sleep 2
+    count=$((count+1))
+done
+
+# Config aur View cache
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Run database migrations automatically
-
+echo "Running migrations..."
 php artisan migrate --force
 
-# Start Apache in foreground
+echo "Starting Apache..."
 exec apache2-foreground
