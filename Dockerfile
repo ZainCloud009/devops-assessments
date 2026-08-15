@@ -50,9 +50,13 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-availab
 # Builder stage se code copy karna
 COPY --from=builder /var/www/html /var/www/html
 
-# Permissions set karna
-RUN chown -R es2-user:apache /var/www/html/storage /var/www/html/bootstrap/cache
+# Entrypoint script copy aur execute permission
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Permissions set karna (Standard Apache user www-data)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["entrypoint.sh"]
