@@ -13,16 +13,16 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "false"
-      APP_KEY: "base64:79diLxbM3/y28VpmB5guR0XKk8FSz8BMGXgWg3qu8ko=" # Agar aapki key hai toh yahan likhein
+      APP_KEY: "base64:79diLxbM3/y28VpmB5guR0XKk8FSz8BMGXgWg3qu8ko="
       DB_CONNECTION: mysql
-      DB_HOST: 127.0.0.1                            # Service name 'db' yahan host banegi
+      DB_HOST: db                             # <-- YAHAN FIX KIYA HAI ('127.0.0.1' KI JAGAH 'db')
       DB_PORT: 3306
-      DB_DATABASE: devops-assesment          # Aapka database name
+      DB_DATABASE: devops-assesment
       DB_USERNAME: root
       DB_PASSWORD: Zain@12345
     depends_on:
       db:
-        condition: service_healthy          # Pehle DB ready hoga, phir App start hogi
+        condition: service_healthy
 
   # 2. MySQL Database Container
   db:
@@ -32,11 +32,11 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: devops-assesment       # Automatic yeh database create hoga
-      MYSQL_ROOT_PASSWORD: Zain@12345      # DB ka root password
+      MYSQL_DATABASE: devops-assesment
+      MYSQL_ROOT_PASSWORD: Zain@12345
     volumes:
       - db_data:/var/lib/mysql
-    healthcheck:                             # DB ke ready hone ka wait karta hai
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
