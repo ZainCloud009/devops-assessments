@@ -19,9 +19,16 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY . /var/www/html
+# App folder se composer files copy (Caching optimization)
+COPY app/composer.json app/composer.lock* ./
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Pura app source code copy karna
+COPY app/ .
+
+# Autoload finish karna after copying code
+RUN composer dump-autoload --optimize
 
 # Stage 2: Production Image with Apache
 FROM php:8.2-apache
@@ -50,7 +57,7 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-availab
 # Builder stage se code copy karna
 COPY --from=builder /var/www/html /var/www/html
 
-# Entrypoint script copy aur execute permission
+# Entrypoint script copy aur execute permission (agar entrypoint.sh root par hai)
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
