@@ -1,0 +1,30 @@
+# Version control
+.git
+.gitignore
+
+# Package dependencies (Docker container ke andar fresh install honge)
+/vendor
+/node_modules
+
+# Environment & Sensitive files
+.env
+.env.*
+!.env.example
+
+# Docker related
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Logs and caches
+*.log
+.phpunit.result.cache
+ storage/logs/*
+ storage/framework/views/*
+ storage/framework/cache/*
+
+# IDEs and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
