@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    libonig-dev \
+    oniguruma-dev \
     libxml2-dev \
     zip \
     unzip
@@ -19,9 +19,16 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY . /var/www/html
+# App folder se composer files copy (Caching optimization)
+COPY app/composer.json app/composer.lock* ./
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Pura app source code copy karna
+COPY app/ .
+
+# Autoload finish karna after copying code
+RUN composer dump-autoload --optimize
 
 # Stage 2: Production Image with Apache
 FROM php:8.2-apache
@@ -50,9 +57,13 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-availab
 # Builder stage se code copy karna
 COPY --from=builder /var/www/html /var/www/html
 
-# Permissions set karna
-RUN chown -R es2-user:ec2-user /var/www/html/storage /var/www/html/bootstrap/cache
+# Entrypoint script copy aur execute permission (agar entrypoint.sh root par hai)
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Permissions set karna (Standard Apache user www-data)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["entrypoint.sh"]
