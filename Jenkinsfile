@@ -2,7 +2,7 @@ pipeline {
     agent { label 'agentzain' } // Yahan apne Jenkins Agent ka exact label dein
 
     environment {
-        APP_DIR = '/var/www/html/devops-assessments/app' // Agent server par project directory path
+        APP_DIR = '/var/www/html/devops-assessments/' // Agent server par project directory path
         DB_HOST = '172.31.5.23'                        // Aap ke DB Server ki IP
     }
 
