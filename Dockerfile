@@ -19,16 +19,17 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 # Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# App folder se composer files copy (Caching optimization)
+# App subfolder se composer files copy (Layer caching)
 COPY app/composer.json app/composer.lock* ./
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Pura app source code copy karna
+# App source code copy karna
 COPY app/ .
 
-# Autoload finish karna after copying code
+# Finish autoload optimization
 RUN composer dump-autoload --optimize
+
 
 # Stage 2: Production Image with Apache
 FROM php:8.2-apache
@@ -46,7 +47,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Apache rewrite module enable karna Laravel routing ke liye
+# Apache rewrite module enable karna
 RUN a2enmod rewrite
 
 # Apache DocumentRoot ko public folder par point karna
@@ -54,16 +55,16 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-available/*.conf
 
-# Builder stage se code copy karna
+# Builder stage se optimized codebase copy karna
 COPY --from=builder /var/www/html /var/www/html
 
-# Entrypoint script copy aur execute permission (agar entrypoint.sh root par hai)
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Entrypoint script check and copy
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh 2>/dev/null || COPY entrypoint.sh /usr/local/bin/entrypoint.sh 2>/dev/null || true
+RUN if [ -f /usr/local/bin/entrypoint.sh ]; then chmod +x /usr/local/bin/entrypoint.sh; fi
 
-# Permissions set karna (Standard Apache user www-data)
+# Permissions set karna for storage & bootstrap cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
