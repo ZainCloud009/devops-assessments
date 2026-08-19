@@ -58,9 +58,9 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-availab
 # Builder stage se optimized codebase copy karna
 COPY --from=builder /var/www/html /var/www/html
 
-# Entrypoint script check and copy
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh 2>/dev/null || COPY entrypoint.sh /usr/local/bin/entrypoint.sh 2>/dev/null || true
-RUN if [ -f /usr/local/bin/entrypoint.sh ]; then chmod +x /usr/local/bin/entrypoint.sh; fi
+# Copy entrypoint script directly from root
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Permissions set karna for storage & bootstrap cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
